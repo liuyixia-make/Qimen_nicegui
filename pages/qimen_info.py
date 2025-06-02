@@ -62,7 +62,7 @@ QIMEN_STYLES = '''
   color: #222;
   text-align: right;
   white-space: nowrap;
-  font-size: 11px  !important;
+  font-size: 13px  !important;
 }
 .main-value {
   font-weight: normal;
@@ -71,7 +71,7 @@ QIMEN_STYLES = '''
   min-width: 3.5em;
   white-space: nowrap;
   display: inline-block;
-  font-size: 11px  !important;
+  font-size: 13px  !important;
 }
 .main-cells {
   display: flex;
@@ -83,7 +83,7 @@ QIMEN_STYLES = '''
   text-align: center;
   margin-right: 0.7em;
   white-space: nowrap;
-  font-size: 11px  !important;
+  font-size: 13px  !important;
 }
 .ganzhi-cell {
   font-weight: bold;
@@ -92,7 +92,7 @@ QIMEN_STYLES = '''
   text-align: center;
   margin-right: 0.7em;
   white-space: nowrap;
-  font-size: 11px  !important;
+  font-size: 12px  !important;
 }
 .nayin-cell:last-child, .ganzhi-cell:last-child {
   margin-right: 0;
@@ -157,7 +157,7 @@ QIMEN_STYLES = '''
     left: 0;
     top: 0;
     right: 0;
-    font-size: 7px;
+    font-size: 8px;
     color: #283f59;
     background: transparent;
     max-width: 100%;
@@ -210,13 +210,14 @@ QIMEN_STYLES = '''
 .second-line-container {
         position: absolute;
         top: 28px;
-        left: 0;
-        right: 0;
+        left: 1.5px;
+        right: 1.5px;
         z-index: 100;
         font-size: 10px;
         line-height: 1;
         display: flex;
         justify-content: space-between;
+        
     }
 .second-line-container .kw {
         text-align: left;
@@ -277,36 +278,104 @@ QIMEN_STYLES = '''
     padding: 0;
     cursor: pointer;
 }
-.bg-north { background-color: rgba(30, 144, 255, 0.1);}
-.bg-southwest { background-color: rgba(139, 69, 19, 0.1);}
-.bg-east { background-color: rgba(0, 168, 107, 0.1);}
-.bg-southeast { background-color: rgba(0, 168, 107, 0.1);}
-.bg-center { background-color: rgba(139, 69, 19, 0.1);}
-.bg-northwest { background-color: rgba(255, 184, 0, 0.1);}
-.bg-west { background-color: rgba(255, 184, 0, 0.1);}
-.bg-northeast { background-color: rgba(139, 69, 19, 0.1);}
-.bg-south { background-color: rgba(255, 69, 0, 0.1);}
+
+/* 在 旺相休囚死 中添加以下样式 */
+.wang-status { color: #FF0000; } /* 旺 - 红色 */
+.xiang-status { color: #FFA500; } /* 相 - 橙色 */
+.xiu-status { color: #008000; } /* 休 - 绿色 */
+.qiu-status { color: #4169E1; } /* 囚 - 蓝色 */
+.si-status { color: #808080; } /* 死 - 灰色 */
+
+
+/* 新的半透明样式 */
+.bg-north { background-color: rgba(30, 144, 255, 0.1);} /* 一宫 */
+.bg-south { background-color: rgba(255, 69, 0, 0.1);} /* 九宫 */
+.bg-east { background-color: rgba(0, 168, 107, 0.1);} /* 三宫 */
+.bg-west { background-color: rgba(255, 184, 0, 0.1);} /* 七宫 */
+.bg-center { background-color: rgba(139, 69, 19, 0.1);} /* 五宫 */
+.bg-southeast { background-color: rgba(0, 168, 107, 0.1);} /* 四宫 */
+.bg-northwest { background-color: rgba(255, 184, 0, 0.1);} /* 六宫 */
+.bg-northeast { background-color: rgba(139, 69, 19, 0.1);} /* 八宫 */
+.bg-southwest { background-color: rgba(139, 69, 19, 0.1);} /* 二宫 */
+
+
+/* 八神通用样式 - 加粗 */
+.bashen {
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* 合并后的印章效果样式 */
+.seal {
+    color: white;
+    background-color: purple;
+    border: 1px solid purple;
+    border-radius: 4px;
+    padding: 1.5px 1px;
+    font-size: 10px;
+    font-weight: 700;
+    display: inline-block;
+    box-shadow: 0 1px 2px rgba(128, 0, 128, 0.3);
+}
 </style>
 '''
 
-def apply_color_to_text(text):
-    color_mapping = {
-        '金': 'jin', '木': 'mu', '水': 'shui', '火': 'huo', '土': 'tu', '覆灯火': 'jin',
-        '乾': 'jin', '兑': 'jin', '离': 'huo', '震': 'mu', '巽': 'mu',
-        '坎': 'shui', '艮': 'tu', '坤': 'tu',
-        '庚': 'jin', '辛': 'jin', '甲': 'mu', '乙': 'mu', '壬': 'shui',
-        '癸': 'shui', '丙': 'huo', '丁': 'huo', '戊': 'tu', '己': 'tu',
-        '申': 'jin', '酉': 'jin', '寅': 'mu', '卯': 'mu', '子': 'shui',
-        '亥': 'shui', '巳': 'huo', '午': 'huo', '辰': 'tu', '戌': 'tu',
-        '丑': 'tu', '未': 'tu',
-    }
+
+def apply_color_to_text(text): 
+    # 原始字典生成逻辑（无需手动维护）
+    
+    color_groups = { 
+        
+        'jin': ['金', '乾', '兑', '覆灯火', '庚', '辛', '申', '酉', '开门', '开', '天心', '心', '惊门', '惊', '天柱', '柱'], 
+        'mu': ['木', '震', '巽', '甲', '乙', '寅', '卯', '伤门', '伤', '天冲', '冲', '杜门', '杜', '天辅', '辅'],
+        'shui': ['水', '坎', '壬', '癸', '子', '亥', '休门', '休', '天蓬', '蓬'], 
+        'huo': ['火', '离', '丙', '丁', '巳', '午', '天英', '英', '景门', '景'], 
+        'tu': ['土', '艮', '坤', '戊', '己', '辰', '戌', '丑', '未', '天芮', '芮', '死门', '死', '天任', '任', '生门', '生','天禽', '禽', ],
+    } 
+    
+    # 自动合并为原始字典格式 
+    color_mapping = {}
+    for color, group in color_groups.items():  
+        for char in group:
+            color_mapping[char] = color 
+    
+    # 原函数逻辑完全保留 
     return f'<span class="{color_mapping[text]}">{text}</span>' if text in color_mapping else text
+
+def apply_vertical_color(text):
+    """对竖排文字应用颜色"""
+    # 状态映射
+    status_mapping = {
+        "wang": ["长", "帝", "临", "旺"],
+        "xiang": ["沐", "冠", "相"],
+        "xiu": ["墓", "绝", "休"],
+        "qiu": ["衰", "病", "囚"],
+        "si": ["死"]
+    }
+    
+    # 生成反向映射
+    text_to_status = {}
+    for status, items in status_mapping.items():
+        for item in items:
+            text_to_status[item] = status
+    
+    # 应用颜色类
+    if text in text_to_status:
+        status = text_to_status[text]
+        return f'<span class="{status}-status">{text}</span>'
+    return text
+
+def apply_bashen_style(text):
+    """应用八神样式"""
+    if text in ["值符", "符"]:
+        return f'<span class="seal">{text}</span>'
+    return f'<span class="bashen">{text}</span>'
 
 def generate_vertical_text(items):
     if not items:
         return ""
     mode = "single" if len(items) == 1 else "multi"
-    spans = "".join([f'<span>{item}</span>' for item in items])
+    spans = "".join([f'<span>{apply_vertical_color(item)}</span>' for item in items])
     return f'<span class="vertical-mini-text {mode}">{spans}</span>'
 
 def generate_cell_content(palace_data, palace_num):
@@ -326,34 +395,34 @@ def generate_cell_content(palace_data, palace_num):
     second_line_text = "".join(second_line_elements)
     if second_line_text:
         content_blocks.append(f'<div class="second-line-container">{second_line_text}</div>')
-    if palace_data.get("地八神"):
-        content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地八神"])}</span></div></div>')
+    # if palace_data.get("地八神"):
+    #     content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地八神"])}</span></div></div>')
     if palace_data.get("隐干"):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["隐干"])}</span></div></div>')
     if palace_data.get("地盘干"):
         changsheng = ""
         if palace_data.get("地盘干长生"):
-            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["地盘干长生"]])
+            wangshuai = generate_vertical_text(palace_data["地盘干长生"])
         content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:7"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地盘干"])}</span>{changsheng}</div></div>')
     if palace_data.get("天盘干"):
         changsheng = ""
         if palace_data.get("天盘干长生"):
-            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["天盘干长生"]])
+            wangshuai = generate_vertical_text(palace_data["天盘干长生"])
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:7"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["天盘干"])}</span>{changsheng}</div></div>')
     if palace_data.get("寄宫干"):
         changsheng = ""
         if palace_data.get("寄宫干长生"):
-            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄宫干长生"]])
+            wangshuai = generate_vertical_text(palace_data["寄宫干长生"])
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫干"])}</span>{changsheng}</div></div>')
     if palace_data.get("寄宫星"):
         wangshuai = ""
         if palace_data.get("寄宫星旺衰"):
-            wangshuai = generate_vertical_text([apply_color_to_text(ws) for ws in palace_data["寄宫星旺衰"]])
+            wangshuai = generate_vertical_text(palace_data["寄宫星旺衰"]) 
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫星"])}</span>{wangshuai}</div></div>')
     if palace_data.get("天盘门"):
         wangshuai = ""
         if palace_data.get("天盘门旺衰"):
-            wangshuai = generate_vertical_text([apply_color_to_text(ws) for ws in palace_data["天盘门旺衰"]])
+            wangshuai = generate_vertical_text(palace_data["天盘门旺衰"])
         content_blocks.append(f'''
             <div class="cell-block" style="grid-row:5;grid-column:4">
                 <div class="cell-flex-align">
@@ -363,21 +432,31 @@ def generate_cell_content(palace_data, palace_num):
             </div>
         ''')
     if palace_data.get("天八神"):
-        wangshuai = ""
-        if palace_data.get("天八神旺衰"):
-            wangshuai = generate_vertical_text([apply_color_to_text(ws) for ws in palace_data["天八神旺衰"]])
+            wangshuai = ""
+            if palace_data.get("天八神旺衰"):
+                wangshuai = generate_vertical_text(palace_data["天八神旺衰"])
+            content_blocks.append(f'''
+                <div class="cell-block" style="grid-row:4;grid-column:4">
+                    <div class="cell-flex-align">
+                        <span class="main-content">{apply_bashen_style(palace_data["天八神"])}</span>
+                        {wangshuai}
+                    </div>
+                </div>
+        ''')
+            
+    if palace_data.get("地八神"):
         content_blocks.append(f'''
-            <div class="cell-block" style="grid-row:4;grid-column:4">
+            <div class="cell-block" style="grid-row:5;grid-column:1">
                 <div class="cell-flex-align">
-                    <span class="main-content">{apply_color_to_text(palace_data["天八神"])}</span>
-                    {wangshuai}
+                    <span class="main-content">{apply_bashen_style(palace_data["地八神"])}</span>
                 </div>
             </div>
         ''')
+
     if palace_data.get("天盘星"):
         wangshuai = ""
         if palace_data.get("天盘星旺衰"):
-            wangshuai = generate_vertical_text([apply_color_to_text(ws) for ws in palace_data["天盘星旺衰"]])
+            wangshuai = generate_vertical_text(palace_data["天盘星旺衰"])
         content_blocks.append(f'''
             <div class="cell-block" style="grid-row:3;grid-column:4">
                 <div class="cell-flex-align">

@@ -6,6 +6,7 @@ from nicegui import app
 
 PAGES_DIR = 'pages'
 
+
 for filename in os.listdir(PAGES_DIR):
     if filename.endswith('.py') and filename != '__init__.py':
         module_name = f'{PAGES_DIR}.{filename[:-3]}'

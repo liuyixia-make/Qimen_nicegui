@@ -62,14 +62,14 @@ async def paipan_page():
             with ui.element('div').classes('mb-4'):
                 method = ui.select(
                     label='起局法',
-                    options=['拆补法', '时家法', '日家法'],
+                    options=['拆补法', '置润法'],
                     value='拆补法'
                 ).classes('w-full mobile-input')
             
             with ui.element('div').classes('mb-4'):
                 area = ui.input(
                     label='地区',
-                    value='none'
+                    value='合浦'
                 ).classes('w-full mobile-input')
 
             async def on_submit():
