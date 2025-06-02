@@ -13,4 +13,8 @@ for filename in os.listdir(PAGES_DIR):
             # 自动注册路由，路由名为 /文件名
             ui.page(f'/{filename[:-3]}')(module.create_page)
 
-ui.run()
+# 启动 NiceGUI 应用
+ui.run(
+    host='0.0.0.0',  # 监听所有网络接口
+    port=8080        # 指定端口号
+)
