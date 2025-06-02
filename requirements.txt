@@ -1,0 +1,4 @@
+geopy==2.4.1
+nicegui==2.18.0
+pytz==2025.2
+skyfield==1.53
