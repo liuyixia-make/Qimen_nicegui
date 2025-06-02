@@ -1,7 +1,8 @@
-# main.py
 import os
 import importlib
 from nicegui import ui
+from fastapi.staticfiles import StaticFiles
+from nicegui import app
 
 PAGES_DIR = 'pages'
 
@@ -13,8 +14,10 @@ for filename in os.listdir(PAGES_DIR):
             # 自动注册路由，路由名为 /文件名
             ui.page(f'/{filename[:-3]}')(module.create_page)
 
-# 启动 NiceGUI 应用
+# 提供 favicon.ico 文件
+app.mount('/static', StaticFiles(directory='.'), name='static')
+
 ui.run(
-    host='0.0.0.0',  # 监听所有网络接口
-    port=8080        # 指定端口号
+    host='0.0.0.0',
+    port=9080
 )
