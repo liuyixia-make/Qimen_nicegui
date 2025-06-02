@@ -1,5 +1,8 @@
 from nicegui import ui
 from Services.paipan_servise import 奇门遁甲
+import datetime  # 修改这里
+from urllib.parse import unquote
+
 
 QIMEN_STYLES = '''
 
@@ -355,89 +358,114 @@ def generate_cell_content(palace_data, palace_num):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:4"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_name)}</span></div></div>')
     return pattern_text + ''.join(content_blocks)
 
+
+
+
 @ui.page('/qimen_info')
-def qimen_info_page():
-    # 在页面函数内部添加CSS
-    ui.add_head_html(QIMEN_STYLES)
-    qimenData = 奇门遁甲.奇门遁甲数据
+def qimen_info_page(datetime_str: str = None, method: str = None, area: str = None):
+    print(f"[DEBUG] 接收到的参数: datetime_str={datetime_str}, method={method}, area={area}")
+    
+    try:
+        # 添加样式
+        ui.html(QIMEN_STYLES)
+        # 创建container元素
+        container = ui.element('div')
+        
+        # 检查参数是否完整
+        if not all([datetime_str, method, area]):
+            ui.label("没有排盘数据，请先生成排盘。")
+            ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
+            return
+        
+        # 实例化奇门遁甲类
+        qimen = 奇门遁甲(
+            container=container,
+            起卦时间=datetime_str,
+            起局法=method,
+            地区=area
+        )
+        
+        qimenData = qimen.奇门遁甲数据  # 直接使用实例的奇门遁甲数据属性
 
-    if "起局信息" not in qimenData:
-        ui.label("没有排盘数据，请先生成排盘。")
-        ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
-        return
+        if "起局信息" not in qimenData:
+            ui.label("没有排盘数据，请先生成排盘。")
+            ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
+            return
 
-    info = qimenData["起局信息"]
+        info = qimenData["起局信息"]
 
-    html_content = f'''
-  
+        html_content = f'''
+        <div class="qimen-info-box">
+            <div class="qimen-info-row">
+                <span class="main-label">时间：</span>
+                <span class="main-value">{info.get("起局时间", "")}</span>
+                <span class="main-label" style="margin-left:1em;">农历：</span>
+                <span class="main-value">{info.get("农历", "")}</span>
+            </div>
+            <div class="qimen-main-block">
+                <div class="qimen-main-row">
+                    <div class="main-label">旬首：</div>
+                    <div class="main-value">{info.get("旬首", "")}</div>
+                    <div class="main-cells">
+                        {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(ny)}</span>' for ny in info.get("四柱纳音", [])])}
+                    </div>
+                </div>
+                <div class="qimen-main-row">
+                    <div class="main-label">局数：</div>
+                    <div class="main-value">{info.get("局数", "")}</div>
+                    <div class="main-cells">
+                        {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[0])}</span>' for gz in info.get("四柱干支", [])])}
+                    </div>
+                </div>
+                <div class="qimen-main-row">
+                    <div class="main-label">值符：</div>
+                    <div class="main-value">{info.get("值符", "")}</div>
+                    <div class="main-cells">
+                        {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[1])}</span>' for gz in info.get("四柱干支", [])])}
+                    </div>
+                </div>
+                <div class="qimen-main-row">
+                    <div class="main-label">值使：</div>
+                    <div class="main-value">{info.get("值使", "")}</div>
+                    <div class="main-cells">
+                        {"".join([f'<span class="ganzhi-cell xunkong-cell">{xk}</span>' for xk in info.get("全局旬空", [])])}
+                    </div>
+                </div>
+            </div>
+            <div class="qimen-info-row">
+                <span class="main-label">{info.get("节气", [{}])[0].get("name", "")}：</span>
+                <span class="main-value">{info.get("节气", [{}])[0].get("date", "")}</span>
+                <span class="main-label" style="margin-left:1.6em;">{info.get("节气", [{}, {}])[1].get("name", "")}：</span>
+                <span class="main-value">{info.get("节气", [{}, {}])[1].get("date", "")}</span>
+            </div>
+            <div class="nine-grid">
+        '''
 
-      <div class="qimen-info-box">
-        <div class="qimen-info-row">
-          <span class="main-label">时间：</span>
-          <span class="main-value">{info.get("起局时间", "")}</span>
-          <span class="main-label" style="margin-left:1em;">农历：</span>
-          <span class="main-value">{info.get("农历", "")}</span>
+        palace_order = ["四宫", "九宫", "二宫", "三宫", "五宫", "七宫", "八宫", "一宫", "六宫"]
+        palace_nums = ["四", "九", "二", "三", "五", "七", "八", "一", "六"]
+        bg_classes = ["bg-southeast", "bg-south", "bg-southwest",
+                     "bg-east", "bg-center", "bg-west",
+                     "bg-northeast", "bg-north", "bg-northwest"]
+
+        for i, (palace_key, palace_num, bg_class) in enumerate(zip(palace_order, palace_nums, bg_classes)):
+            palace_data = qimenData.get(palace_key, {})
+            cell_content = generate_cell_content(palace_data, palace_num)
+            html_content += f'''
+            <div class="grid-cell {bg_class}">
+                <div class="cell-inner-grid">
+                    {cell_content}
+                </div>
+            </div>'''
+
+        html_content += '''
+            </div>
         </div>
-        <div class="qimen-main-block">
-          <div class="qimen-main-row">
-            <div class="main-label">旬首：</div>
-            <div class="main-value">{info.get("旬首", "")}</div>
-            <div class="main-cells">
-              {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(ny)}</span>' for ny in info.get("四柱纳音", [])])}
-            </div>
-          </div>
-          <div class="qimen-main-row">
-            <div class="main-label">局数：</div>
-            <div class="main-value">{info.get("局数", "")}</div>
-            <div class="main-cells">
-              {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[0])}</span>' for gz in info.get("四柱干支", [])])}
-            </div>
-          </div>
-          <div class="qimen-main-row">
-            <div class="main-label">值符：</div>
-            <div class="main-value">{info.get("值符", "")}</div>
-            <div class="main-cells">
-              {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[1])}</span>' for gz in info.get("四柱干支", [])])}
-            </div>
-          </div>
-          <div class="qimen-main-row">
-            <div class="main-label">值使：</div>
-            <div class="main-value">{info.get("值使", "")}</div>
-            <div class="main-cells">
-              {"".join([f'<span class="ganzhi-cell xunkong-cell">{xk}</span>' for xk in info.get("全局旬空", [])])}
-            </div>
-          </div>
-      </div>
-      <div class="qimen-info-row">
-        <span class="main-label">{info.get("节气", [{}])[0].get("name", "")}：</span>
-        <span class="main-value">{info.get("节气", [{}])[0].get("date", "")}</span>
-        <span class="main-label" style="margin-left:1.6em;">{info.get("节气", [{}, {}])[1].get("name", "")}：</span>
-        <span class="main-value">{info.get("节气", [{}, {}])[1].get("date", "")}</span>
-      </div>
-     
-      <div class="nine-grid">'''
+        '''
 
-    palace_order = ["四宫", "九宫", "二宫", "三宫", "五宫", "七宫", "八宫", "一宫", "六宫"]
-    palace_nums = ["四", "九", "二", "三", "五", "七", "八", "一", "六"]
-    bg_classes = ["bg-southeast", "bg-south", "bg-southwest",
-                  "bg-east", "bg-center", "bg-west",
-                  "bg-northeast", "bg-north", "bg-northwest"]
+        ui.html(html_content)
+        ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
 
-    for i, (palace_key, palace_num, bg_class) in enumerate(zip(palace_order, palace_nums, bg_classes)):
-        palace_data = qimenData.get(palace_key, {})
-        cell_content = generate_cell_content(palace_data, palace_num)
-        html_content += f'''
-
-        <div class="grid-cell {bg_class}">
-          <div class="cell-inner-grid">
-            {cell_content}
-          </div>
-        </div>'''
-
-    html_content += '''
-      </div>
-    </div>
-    '''
-
-    ui.html(html_content)
-    ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        ui.notify(f"发生错误: {str(e)}", color='negative')
+        ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))

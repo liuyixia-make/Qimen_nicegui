@@ -1,6 +1,8 @@
 import datetime
 import pytz
 from nicegui import ui
+from Services.paipan_servise import 奇门遁甲
+from urllib.parse import urlencode
 
 @ui.page('/paipan')
 async def paipan_page():
@@ -9,33 +11,37 @@ async def paipan_page():
     current_beijing_time = datetime.datetime.now(beijing_tz)
     default_time = current_beijing_time.strftime("%Y-%m-%dT%H:%M")
 
-    ui.add_head_html('''
+    ui.add_head_html(f'''
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <style>
-            .datetime-input {
+            .datetime-input {{
                 -webkit-appearance: none;
                 font-size: 16px !important;
                 touch-action: manipulation;
-            }
+            }}
             
-            @media (max-width: 640px) {
-                .mobile-container {
+            @media (max-width: 640px) {{
+                .mobile-container {{
                     padding: 0.5rem !important;
-                }
-                .mobile-card {
+                }}
+                .mobile-card {{
                     padding: 1rem !important;
                     margin: 0.5rem !important;
-                }
-                .mobile-input {
+                }}
+                .mobile-input {{
                     height: 42px !important;
-                }
-            }
+                }}
+            }}
         </style>
         <script>
-            // 设置默认时间
-            window.onload = function() {
-                document.getElementById("datetime_input").value = '${default_time}';
-            }
+            document.addEventListener('DOMContentLoaded', function() {{
+                setTimeout(function() {{
+                    var input = document.getElementById("datetime_input");
+                    if(input) {{
+                        input.value = "{default_time}";
+                    }}
+                }}, 100);
+            }});
         </script>
     ''')
 
@@ -48,7 +54,6 @@ async def paipan_page():
                     <label class="block text-sm font-medium text-gray-700 mb-1">起卦时间 (北京时间)</label>
                     <input type="datetime-local" 
                            id="datetime_input"
-                           value="{default_time}"
                            class="datetime-input mobile-input w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                            style="height: 42px;">
                 </div>
@@ -77,26 +82,17 @@ async def paipan_page():
                         ui.notify('请选择时间', color='warning', position='center')
                         return
                     
-                    # 验证时间格式
-                    try:
-                        datetime_obj = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M")
-                        # 将时间转换为北京时间
-                        beijing_time = beijing_tz.localize(datetime_obj)
-                        formatted_time = beijing_time.strftime("%Y-%m-%d %H:%M")
-                    except ValueError:
-                        ui.notify('时间格式不正确', color='negative', position='center')
-                        return
-                    
-                    ui.storage.session['qimen_data'] = {
-                        'datetime': formatted_time,
+                    params = {
+                        'datetime_str': datetime_str,
                         'method': method.value,
                         'area': area.value
                     }
                     
-                    print(f"[DEBUG] 提交数据: datetime={formatted_time}, method={method.value}, area={area.value}")
-                    await ui.navigate.to('/qimen_info')
+                    print(f"[DEBUG] 发送参数: {params}")
+                    ui.navigate.to(f'/qimen_info?{urlencode(params)}')
                     
                 except Exception as e:
+                    print(f"Error in submit: {str(e)}")
                     ui.notify(f'错误: {str(e)}', color='negative', position='center')
 
             ui.button(
