@@ -346,8 +346,8 @@ def apply_vertical_color(text):
     """对竖排文字应用颜色"""
     # 状态映射
     status_mapping = {
-        "wang": ["长", "帝", "临", "旺"],
-        "xiang": ["沐", "冠", "相"],
+        "wang": ["生", "帝", "临", "旺"],
+        "xiang": ["沐", "冠", "相", "养"],
         "xiu": ["墓", "绝", "休"],
         "qiu": ["衰", "病", "囚"],
         "si": ["死"]
@@ -399,30 +399,37 @@ def generate_cell_content(palace_data, palace_num):
     #     content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地八神"])}</span></div></div>')
     if palace_data.get("隐干"):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["隐干"])}</span></div></div>')
+    
+    
+    
     if palace_data.get("地盘干"):
         changsheng = ""
         if palace_data.get("地盘干长生"):
-            wangshuai = generate_vertical_text(palace_data["地盘干长生"])
+            changsheng = generate_vertical_text(palace_data["地盘干长生"])  # 使用原始文本，让 generate_vertical_text 内部处理颜色
         content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:7"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地盘干"])}</span>{changsheng}</div></div>')
+
     if palace_data.get("天盘干"):
         changsheng = ""
         if palace_data.get("天盘干长生"):
-            wangshuai = generate_vertical_text(palace_data["天盘干长生"])
+            changsheng = generate_vertical_text(palace_data["天盘干长生"])  # 使用原始文本，让 generate_vertical_text 内部处理颜色
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:7"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["天盘干"])}</span>{changsheng}</div></div>')
+
     if palace_data.get("寄宫干"):
         changsheng = ""
         if palace_data.get("寄宫干长生"):
-            wangshuai = generate_vertical_text(palace_data["寄宫干长生"])
+            changsheng = generate_vertical_text(palace_data["寄宫干长生"])  # 使用原始文本
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫干"])}</span>{changsheng}</div></div>')
+
     if palace_data.get("寄宫星"):
         wangshuai = ""
         if palace_data.get("寄宫星旺衰"):
-            wangshuai = generate_vertical_text(palace_data["寄宫星旺衰"]) 
+            wangshuai = generate_vertical_text(palace_data["寄宫星旺衰"])  # 使用原始文本
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫星"])}</span>{wangshuai}</div></div>')
+
     if palace_data.get("天盘门"):
         wangshuai = ""
         if palace_data.get("天盘门旺衰"):
-            wangshuai = generate_vertical_text(palace_data["天盘门旺衰"])
+            wangshuai = generate_vertical_text(palace_data["天盘门旺衰"])  # 使用原始文本
         content_blocks.append(f'''
             <div class="cell-block" style="grid-row:5;grid-column:4">
                 <div class="cell-flex-align">
@@ -431,24 +438,16 @@ def generate_cell_content(palace_data, palace_num):
                 </div>
             </div>
         ''')
+
     if palace_data.get("天八神"):
-            wangshuai = ""
-            if palace_data.get("天八神旺衰"):
-                wangshuai = generate_vertical_text(palace_data["天八神旺衰"])
-            content_blocks.append(f'''
-                <div class="cell-block" style="grid-row:4;grid-column:4">
-                    <div class="cell-flex-align">
-                        <span class="main-content">{apply_bashen_style(palace_data["天八神"])}</span>
-                        {wangshuai}
-                    </div>
-                </div>
-        ''')
-            
-    if palace_data.get("地八神"):
+        wangshuai = ""
+        if palace_data.get("天八神旺衰"):
+            wangshuai = generate_vertical_text(palace_data["天八神旺衰"])  # 使用原始文本
         content_blocks.append(f'''
-            <div class="cell-block" style="grid-row:5;grid-column:1">
+            <div class="cell-block" style="grid-row:4;grid-column:4">
                 <div class="cell-flex-align">
-                    <span class="main-content">{apply_bashen_style(palace_data["地八神"])}</span>
+                    <span class="main-content">{apply_bashen_style(palace_data["天八神"])}</span>
+                    {wangshuai}
                 </div>
             </div>
         ''')
@@ -456,7 +455,7 @@ def generate_cell_content(palace_data, palace_num):
     if palace_data.get("天盘星"):
         wangshuai = ""
         if palace_data.get("天盘星旺衰"):
-            wangshuai = generate_vertical_text(palace_data["天盘星旺衰"])
+            wangshuai = generate_vertical_text(palace_data["天盘星旺衰"])  # 使用原始文本
         content_blocks.append(f'''
             <div class="cell-block" style="grid-row:3;grid-column:4">
                 <div class="cell-flex-align">
