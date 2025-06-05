@@ -50,6 +50,13 @@ QIMEN_STYLES = '''
 .qimen-main-block {
   font-size: 16px;
 }
+.qimen-info-row {
+  display: grid;
+  grid-template-columns: auto minmax(0.5em, 4.5em) auto minmax(0.5em, 4.5em);
+  align-items: center;
+  column-gap: 0em;
+  font-size: 16px;
+}
 .qimen-main-row {
   display: grid;
   grid-template-columns: auto minmax(0.5em, 4.5em) 1fr;
@@ -88,6 +95,15 @@ QIMEN_STYLES = '''
 .ganzhi-cell {
   font-weight: bold;
   color: #fa7d00;
+  min-width: 3.5em;
+  text-align: center;
+  margin-right: 0.7em;
+  white-space: nowrap;
+  font-size: 12px  !important;
+}
+.xunkong-cell {
+  color: #848180;
+  font-weight: bold;
   min-width: 3.5em;
   text-align: center;
   margin-right: 0.7em;
@@ -395,8 +411,8 @@ def generate_cell_content(palace_data, palace_num):
     second_line_text = "".join(second_line_elements)
     if second_line_text:
         content_blocks.append(f'<div class="second-line-container">{second_line_text}</div>')
-    # if palace_data.get("地八神"):
-    #     content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地八神"])}</span></div></div>')
+    if palace_data.get("地八神"):
+        content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["地八神"])}</span></div></div>')
     if palace_data.get("隐干"):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["隐干"])}</span></div></div>')
     
@@ -469,8 +485,41 @@ def generate_cell_content(palace_data, palace_num):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:4"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_name)}</span></div></div>')
     return pattern_text + ''.join(content_blocks)
 
+def generate_nine_palaces(qimen_data):
+    """
+    生成九宫格内容
+    """
+    palace_order = ["四宫", "九宫", "二宫", "三宫", "五宫", "七宫", "八宫", "一宫", "六宫"]
+    palace_nums = ["四", "九", "二", "三", "五", "七", "八", "一", "六"]
+    bg_classes = ["bg-southeast", "bg-south", "bg-southwest",
+                  "bg-east", "bg-center", "bg-west",
+                  "bg-northeast", "bg-north", "bg-northwest"]
 
-
+    html_content = ""
+    for i, (palace_key, palace_num, bg_class) in enumerate(zip(palace_order, palace_nums, bg_classes)):
+        palace_data = qimen_data.get(palace_key, {})
+        if palace_data:
+            cell_content = generate_cell_content(palace_data, palace_num)
+            html_content += f'''
+            <div class="grid-cell {bg_class}">
+                <div class="cell-inner-grid">
+                    {cell_content}
+                </div>
+            </div>'''
+        else:
+            # 如果宫位数据为空，显示简单的宫位数字
+            html_content += f'''
+            <div class="grid-cell {bg_class}">
+                <div class="cell-inner-grid">
+                    <div class="cell-block" style="grid-row:3;grid-column:4">
+                        <div class="cell-flex-align">
+                            <span class="main-content">{palace_num}宫</span>
+                        </div>
+                    </div>
+                </div>
+            </div>'''
+    
+    return html_content
 
 @ui.page('/qimen_info')
 def qimen_info_page(datetime_str: str = None, method: str = None, area: str = None):
@@ -478,106 +527,196 @@ def qimen_info_page(datetime_str: str = None, method: str = None, area: str = No
     
     try:
         # 添加样式
-        ui.html(QIMEN_STYLES)
+        ui.add_head_html(QIMEN_STYLES)
+        ui.add_head_html('''
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        ''')
         
-        # 创建居中容器
-        with ui.column().classes('w-full max-w-md mx-auto p-4 mobile-container'):
-            with ui.card().classes('w-full p-4 shadow mobile-card'):
-                # 检查参数是否完整
-                if not all([datetime_str, method, area]):
-                    ui.label("没有排盘数据，请先生成排盘。")
-                    ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
-                    return
-                
-                # 实例化奇门遁甲类
-                qimen = 奇门遁甲(
-                    container=ui.element('div'),
-                    起卦时间=datetime_str,
-                    起局法=method,
-                    地区=area
-                )
-                
-                qimenData = qimen.奇门遁甲数据
-
-                if "起局信息" not in qimenData:
-                    ui.label("没有排盘数据，请先生成排盘。")
-                    ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
-                    return
-
-                info = qimenData["起局信息"]
-
-                html_content = f'''
+        # 检查参数是否完整
+        if not datetime_str:
+            ui.label("未提供日期时间参数，无法排盘").classes('text-red')
+            return
+        if not method:
+            ui.label("未提供起局法参数，无法排盘").classes('text-red')
+            return
+        
+        # 解码URL参数
+        if datetime_str:
+            datetime_str = unquote(datetime_str)
+        if method:
+            method = unquote(method)
+        if area:
+            area = unquote(area)
+            
+        # 实例化奇门遁甲类
+        qimen = 奇门遁甲(起局时间=datetime_str, 起局法=method, 地区=area)
+        qimen_data = qimen.奇门遁甲数据
+        
+        with ui.card().tight().classes('w-full max-w-3xl mx-auto shadow-lg rounded-xl overflow-hidden'):
+            # 将基础信息放在顶部的卡片内
+            with ui.card().tight().classes('mx-4 my-2 rounded-lg shadow-sm'):
+                ui.html(f'''
                 <div class="qimen-info-box">
-                    <div class="qimen-info-row">
-                        <span class="main-label">时间：</span>
-                        <span class="main-value">{info.get("起局时间", "")}</span>
-                        <span class="main-label" style="margin-left:1em;">农历：</span>
-                        <span class="main-value">{info.get("农历", "")}</span>
-                    </div>
                     <div class="qimen-main-block">
-                        <div class="qimen-main-row">
-                            <div class="main-label">旬首：</div>
-                            <div class="main-value">{info.get("旬首", "")}</div>
-                            <div class="main-cells">
-                                {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(ny)}</span>' for ny in info.get("四柱纳音", [])])}
-                            </div>
-                        </div>
-                        <div class="qimen-main-row">
-                            <div class="main-label">局数：</div>
-                            <div class="main-value">{info.get("局数", "")}</div>
-                            <div class="main-cells">
-                                {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[0])}</span>' for gz in info.get("四柱干支", [])])}
-                            </div>
-                        </div>
-                        <div class="qimen-main-row">
-                            <div class="main-label">值符：</div>
-                            <div class="main-value">{info.get("值符", "")}</div>
-                            <div class="main-cells">
-                                {"".join([f'<span class="ganzhi-cell">{apply_color_to_text(gz[1])}</span>' for gz in info.get("四柱干支", [])])}
-                            </div>
-                        </div>
-                        <div class="qimen-main-row">
-                            <div class="main-label">值使：</div>
-                            <div class="main-value">{info.get("值使", "")}</div>
-                            <div class="main-cells">
-                                {"".join([f'<span class="ganzhi-cell xunkong-cell">{xk}</span>' for xk in info.get("全局旬空", [])])}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="qimen-info-row">
-                        <span class="main-label">{info.get("节气", [{}])[0].get("name", "")}：</span>
-                        <span class="main-value">{info.get("节气", [{}])[0].get("date", "")}</span>
-                        <span class="main-label" style="margin-left:1.6em;">{info.get("节气", [{}, {}])[1].get("name", "")}：</span>
-                        <span class="main-value">{info.get("节气", [{}, {}])[1].get("date", "")}</span>
-                    </div>
-                    <div class="nine-grid">
-                '''
-
-                palace_order = ["四宫", "九宫", "二宫", "三宫", "五宫", "七宫", "八宫", "一宫", "六宫"]
-                palace_nums = ["四", "九", "二", "三", "五", "七", "八", "一", "六"]
-                bg_classes = ["bg-southeast", "bg-south", "bg-southwest",
-                            "bg-east", "bg-center", "bg-west",
-                            "bg-northeast", "bg-north", "bg-northwest"]
-
-                for i, (palace_key, palace_num, bg_class) in enumerate(zip(palace_order, palace_nums, bg_classes)):
-                    palace_data = qimenData.get(palace_key, {})
-                    cell_content = generate_cell_content(palace_data, palace_num)
-                    html_content += f'''
-                    <div class="grid-cell {bg_class}">
-                        <div class="cell-inner-grid">
-                            {cell_content}
-                        </div>
-                    </div>'''
-
-                html_content += '''
-                    </div>
+                      <div class="qimen-main-row">
+                          <div class="main-label">时间：</div>
+                          <div class="main-value">{"<span style='color:red;'>●</span>" if qimen_data["起局信息"].get("是否真太阳时", False) else ""} {qimen_data["起局信息"].get("起局时间", "")}</div>
+                          <div class="main-cells" style="margin-left:5em;">
+                              <span class="main-label">农历：</span>
+                              <span class="main-value">&nbsp;&nbsp;{qimen_data["起局信息"].get("农历", "")}</span>
+                          </div>
+                      </div>
+                      <div class="qimen-main-row">
+                          <div class="main-label">旬首：</div>
+                          <div class="main-value">{qimen_data["起局信息"].get("旬首", "")}</div>
+                          <div class="main-cells">
+                              {"".join([f'<span class="nayin-cell">{apply_color_to_text(ny)}</span>' for ny in qimen_data["起局信息"].get("四柱纳音", [])])}
+                          </div>
+                      </div>
+                      <div class="qimen-main-row">
+                          <div class="main-label">局数：</div>
+                          <div class="main-value">{qimen_data["起局信息"].get("局数", "")}</div>
+                          <div class="main-cells">
+                              {generate_ganzhi_cells(qimen_data["起局信息"].get("四柱干支", []), 0)}
+                          </div>
+                      </div>
+                      <div class="qimen-main-row">
+                          <div class="main-label">值符：</div>
+                          <div class="main-value">{qimen_data["起局信息"].get("值符", "")}</div>
+                          <div class="main-cells">
+                              {generate_ganzhi_cells(qimen_data["起局信息"].get("四柱干支", []), 1)}
+                          </div>
+                      </div>
+                      <div class="qimen-main-row">
+                          <div class="main-label">值使：</div>
+                          <div class="main-value">{qimen_data["起局信息"].get("值使", "")}</div>
+                          <div class="main-cells">
+                              {"".join([f'<span class="xunkong-cell">{xk}</span>' for xk in qimen_data["起局信息"].get("四柱旬空", [])])}
+                          </div>
+                         </div>
+                     </div>
+                     <div class="qimen-info-row">
+                         <span class="main-label">{qimen_data["起局信息"].get("节气", [{}])[0].get("name", "")}：</span>
+                         <span class="main-value">{格式化节气日期(qimen_data["起局信息"].get("节气", [{}])[0].get("date", ""))}</span>
+                         <span class="main-label" style="margin-left:1.6em;">{qimen_data["起局信息"].get("节气", [{}, {}])[1].get("name", "")}：</span>
+                         <span class="main-value">{格式化节气日期(qimen_data["起局信息"].get("节气", [{}, {}])[1].get("date", ""))}</span>
+                      </div>
                 </div>
-                '''
-
-                ui.html(html_content)
-                ui.button('返回', on_click=lambda: ui.navigate.to('/paipan')).classes('w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg text-lg font-medium mt-2')
+                ''')
+            
+            # 九宫格显示
+            with ui.card().tight().classes('mx-4 my-2 rounded-lg shadow-sm'):
+                ui.html(f'''
+                <div class="nine-grid">
+                    {generate_nine_palaces(qimen_data)}
+                </div>
+                ''')
+            
+            # 返回按钮
+            with ui.row().classes('justify-center my-4'):
+                ui.button('返回重新排盘', on_click=lambda: ui.navigate.to('/paipan')).classes('bg-blue-500 hover:bg-blue-600 text-white')
 
     except Exception as e:
-        print(f"Error: {str(e)}")
-        ui.notify(f"发生错误: {str(e)}", color='negative')
-        ui.button('返回', on_click=lambda: ui.navigate.to('/paipan'))
+        ui.label(f"排盘发生错误: {str(e)}").classes('text-red')
+        print(f"排盘错误: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        ui.button('返回重新排盘', on_click=lambda: ui.navigate.to('/paipan')).classes('bg-blue-500 hover:bg-blue-600 text-white')
+
+def 格式化节气列表(节气列表):
+    """
+    格式化节气列表为显示文本
+    """
+    if not 节气列表:
+        return "无节气数据"
+    
+    # 检查节气列表的格式
+    if isinstance(节气列表[0], dict):
+        # 旧格式：[{"name": "节气名", "date": "日期"}, {"name": "节气名", "date": "日期"}]
+        if len(节气列表) >= 2:
+            当前节气 = 节气列表[0].get("name", "")
+            当前节气时间 = 节气列表[0].get("date", "")
+            下一节气 = 节气列表[1].get("name", "")
+            下一节气时间 = 节气列表[1].get("date", "")
+        elif len(节气列表) == 1:
+            当前节气 = 节气列表[0].get("name", "")
+            当前节气时间 = 节气列表[0].get("date", "")
+            下一节气 = ""
+            下一节气时间 = ""
+        else:
+            return "无节气数据"
+    else:
+        # 新格式：["节气名", "日期", "节气名", "日期"]
+        if len(节气列表) >= 4:
+            当前节气, 当前节气时间, 下一节气, 下一节气时间 = 节气列表[:4]
+        elif len(节气列表) == 3:
+            当前节气, 当前节气时间, 下一节气 = 节气列表
+            下一节气时间 = ""
+        elif len(节气列表) == 2:
+            当前节气, 当前节气时间 = 节气列表
+            下一节气 = ""
+            下一节气时间 = ""
+        elif len(节气列表) == 1:
+            当前节气 = 节气列表[0]
+            当前节气时间 = ""
+            下一节气 = ""
+            下一节气时间 = ""
+        else:
+            return "无节气数据"
+    
+    formatted_当前节气时间 = 格式化节气日期(当前节气时间) if 当前节气时间 else ""
+    formatted_下一节气时间 = 格式化节气日期(下一节气时间) if 下一节气时间 else ""
+    
+    if 下一节气:
+        return f"{当前节气}{formatted_当前节气时间} {下一节气}{formatted_下一节气时间}"
+    else:
+        return f"{当前节气}{formatted_当前节气时间}"
+
+def 格式化节气日期(date_str):
+    """
+    将完整的日期时间字符串格式化为简短格式
+    例如: "2025-06-05 17:56:16" -> "06-05 17:56"
+    """
+    if not date_str:
+        return ""
+    
+    try:
+        dt = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        return f"{dt.strftime('%m-%d %H:%M')}"
+    except:
+        return f"{date_str}"
+
+def generate_four_pillars_display(info_data):
+    """
+    生成四柱显示的HTML代码
+    """
+    html = ""
+    if "四柱干支" not in info_data or not info_data["四柱干支"]:
+        return '<div class="ganzhi-cell">未知</div>' * 4
+    
+    for pillar in info_data["四柱干支"]:
+        if len(pillar) == 2:
+            html += f'<div class="ganzhi-cell">{pillar[0]}{pillar[1]}</div>'
+        else:
+            html += '<div class="ganzhi-cell">未知</div>'
+    
+    return html
+
+def generate_ganzhi_cells(干支列表, index):
+    """
+    生成干支单元格的HTML代码
+    """
+    cells = []
+    for 干支 in 干支列表:
+        if isinstance(干支, (list, tuple)) and len(干支) > index:
+            cells.append(f'<span class="ganzhi-cell">{apply_color_to_text(干支[index])}</span>')
+        elif isinstance(干支, str) and " " in 干支:
+            # 处理字符串格式的四柱干支，例如: "甲子 乙丑 丙寅 丁卯"
+            干支数组 = 干支.split()
+            if 0 <= index < len(干支数组[0]):
+                cells.append(f'<span class="ganzhi-cell">{apply_color_to_text(干支数组[index])}</span>')
+            else:
+                cells.append('<span class="ganzhi-cell">未知</span>')
+        else:
+            cells.append('<span class="ganzhi-cell">未知</span>')
+    return "".join(cells)

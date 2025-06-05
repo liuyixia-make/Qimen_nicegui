@@ -20,5 +20,5 @@ app.mount('/static', StaticFiles(directory='.'), name='static')
 
 ui.run(
     host='0.0.0.0',
-    port=9080
+    port=9090
 )
