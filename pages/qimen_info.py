@@ -552,6 +552,13 @@ def qimen_info_page(datetime_str: str = None, method: str = None, area: str = No
         qimen = 奇门遁甲(起局时间=datetime_str, 起局法=method, 地区=area)
         qimen_data = qimen.奇门遁甲数据
         
+        # 调试节气数据
+        print(f"[DEBUG] 节气数据类型: {type(qimen_data['起局信息'].get('节气'))}")
+        print(f"[DEBUG] 节气数据内容: {qimen_data['起局信息'].get('节气')}")
+        if qimen_data['起局信息'].get('节气'):
+            for i, item in enumerate(qimen_data['起局信息'].get('节气')):
+                print(f"[DEBUG] 节气[{i}] 类型: {type(item)}, 值: {item}")
+        
         with ui.card().tight().classes('w-full max-w-3xl mx-auto shadow-lg rounded-xl overflow-hidden'):
             # 将基础信息放在顶部的卡片内
             with ui.card().tight().classes('mx-4 my-2 rounded-lg shadow-sm'):
@@ -596,10 +603,9 @@ def qimen_info_page(datetime_str: str = None, method: str = None, area: str = No
                          </div>
                      </div>
                      <div class="qimen-info-row">
-                         <span class="main-label">{qimen_data["起局信息"].get("节气", [{}])[0].get("name", "")}：</span>
-                         <span class="main-value">{格式化节气日期(qimen_data["起局信息"].get("节气", [{}])[0].get("date", ""))}</span>
-                         <span class="main-label" style="margin-left:1.6em;">{qimen_data["起局信息"].get("节气", [{}, {}])[1].get("name", "")}：</span>
-                         <span class="main-value">{格式化节气日期(qimen_data["起局信息"].get("节气", [{}, {}])[1].get("date", ""))}</span>
+                         <span class="main-label">{获取当前节气名称(qimen_data["起局信息"].get("节气", []))}：</span>
+                         <span class="main-value">{获取当前节气日期(qimen_data["起局信息"].get("节气", []))}</span>
+                         {节气显示(qimen_data["起局信息"].get("节气", []))}
                       </div>
                 </div>
                 ''')
@@ -685,6 +691,68 @@ def 格式化节气日期(date_str):
         return f"{dt.strftime('%m-%d %H:%M')}"
     except:
         return f"{date_str}"
+
+def 获取当前节气名称(节气列表):
+    """
+    从节气列表中获取当前节气名称，支持不同的数据格式
+    """
+    if not 节气列表:
+        return "无节气"
+    
+    # 字典格式: [{"name": "节气名", "date": "日期"}, ...]
+    if isinstance(节气列表[0], dict):
+        return 节气列表[0].get("name", "无节气")
+    
+    # 列表格式: ["节气名", "日期", "节气名", "日期"]
+    if isinstance(节气列表[0], str):
+        return 节气列表[0]
+    
+    return "无节气"
+
+def 获取当前节气日期(节气列表):
+    """
+    从节气列表中获取当前节气日期，支持不同的数据格式
+    """
+    if not 节气列表:
+        return ""
+    
+    # 字典格式: [{"name": "节气名", "date": "日期"}, ...]
+    if isinstance(节气列表[0], dict):
+        return 格式化节气日期(节气列表[0].get("date", ""))
+    
+    # 列表格式: ["节气名", "日期", "节气名", "日期"]
+    if len(节气列表) >= 2 and isinstance(节气列表[0], str) and isinstance(节气列表[1], str):
+        return 格式化节气日期(节气列表[1])
+    
+    return ""
+
+def 节气显示(节气列表):
+    """
+    安全处理节气数据，确保即使节气列表只有一个元素也不会报错
+    可以处理不同格式的节气数据
+    """
+    if not 节气列表 or len(节气列表) <= 1:
+        return ""
+    
+    # 第二个节气的信息
+    if isinstance(节气列表[1], dict):
+        节气名称 = 节气列表[1].get("name", "")
+        节气日期 = 节气列表[1].get("date", "")
+    else:
+        # 处理可能的其他格式
+        try:
+            if len(节气列表) >= 4 and isinstance(节气列表[2], str) and isinstance(节气列表[3], str):
+                节气名称 = 节气列表[2]
+                节气日期 = 节气列表[3]
+            else:
+                return ""
+        except:
+            return ""
+    
+    return f'''
+    <span class="main-label" style="margin-left:1.6em;">{节气名称}：</span>
+    <span class="main-value">{格式化节气日期(节气日期)}</span>
+    '''
 
 def generate_four_pillars_display(info_data):
     """
