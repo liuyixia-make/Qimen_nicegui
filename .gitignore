@@ -59,3 +59,7 @@ htmlcov/
 
 # NiceGUI 可能的特定缓存（可按需调整） 
 nicegui_cache/  # 假设 NiceGUI 有此缓存目录 
+
+
+
+*.pyc
