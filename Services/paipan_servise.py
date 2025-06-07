@@ -40,7 +40,7 @@ class 奇门遁甲:
                 "农历": None,
                 "节气": [],  # 初始化为空列表，避免后续引用错误
                 "局数": "阳九局",
-                "四柱干支": [],  # 默认提供一组四柱干支数据
+                "四柱干支": [["甲", "子"], ["乙", "丑"], ["丙", "寅"], ["丁", "卯"]],  # 设置默认的四柱干支数据
                 "四柱纳音": ["覆灯火", "覆灯火", "覆灯火", "覆灯火"],
                 "四柱旬空": ["戊子空", "丁巳空", "戊子空", "丁巳空"],
                 "符头": None,
@@ -69,12 +69,18 @@ class 奇门遁甲:
             self.奇门遁甲数据["起局信息"]["是否真太阳时"] = True
             self.奇门遁甲数据["起局信息"]["农历"] = self.计算农历(true_solar_time)
             self.奇门遁甲数据["起局信息"]["节气"] = self.计算节气(true_solar_time)
+            
+            # 计算四柱干支
+            self.计算四柱干支(true_solar_time)
         else:
             # 如果没有提供地区，直接使用起局时间
             self.奇门遁甲数据["起局信息"]["起局时间"] = self.起局时.strftime('%Y-%m-%d %H:%M:%S')
             self.奇门遁甲数据["起局信息"]["是否真太阳时"] = False
             self.奇门遁甲数据["起局信息"]["农历"] = self.计算农历(self.起局时)
             self.奇门遁甲数据["起局信息"]["节气"] = self.计算节气(self.起局时)
+            
+            # 计算四柱干支
+            self.计算四柱干支(self.起局时)
 
     def 计算节气(self, 时间):
         """
@@ -114,15 +120,15 @@ class 奇门遁甲:
         下一节气分 = 下一节气阳历.getMinute()
         下一节气日期 = datetime(下一节气年, 下一节气月, 下一节气日, 下一节气时, 下一节气分)
         
-        # 创建节气列表
+        # 创建节气列表，修改日期格式为"MM-DD HH:MM"
         节气列表 = [
             {
                 "name": 上一节气名称,
-                "date": 上一节气日期.strftime('%Y-%m-%d %H:%M')
+                "date": 上一节气日期.strftime('%m-%d %H:%M')
             },
             {
                 "name": 下一节气名称,
-                "date": 下一节气日期.strftime('%Y-%m-%d %H:%M')
+                "date": 下一节气日期.strftime('%m-%d %H:%M')
             }
         ]
         
@@ -253,6 +259,32 @@ class 奇门遁甲:
                 时辰 = 时辰地支[时辰索引]
                 return f"{时间.month}月{时间.day}日 {时辰}时"
 
+    def 计算四柱干支(self, 时间):
+        """
+        计算四柱干支并更新奇门遁甲数据
+        :param 时间: datetime对象
+        """
+        try:
+            import cnlunar
+            农历 = cnlunar.Lunar(时间, godType='8char')
+            
+            # 设置四柱干支为数组格式
+            年柱 = [农历.year8Char[0], 农历.year8Char[1]]
+            月柱 = [农历.month8Char[0], 农历.month8Char[1]]
+            日柱 = [农历.day8Char[0], 农历.day8Char[1]]
+            时柱 = [农历.twohour8Char[0], 农历.twohour8Char[1]]
+            self.奇门遁甲数据["起局信息"]["四柱干支"] = [年柱, 月柱, 日柱, 时柱]
+            
+            print(f"[DEBUG] 四柱干支: {self.奇门遁甲数据['起局信息']['四柱干支']}")
+            return True
+        except Exception as e:
+            print(f"计算四柱干支时发生错误: {str(e)}")
+            # 设置默认四柱干支
+            self.奇门遁甲数据["起局信息"]["四柱干支"] = [
+                ["甲", "子"], ["乙", "丑"], ["丙", "寅"], ["丁", "卯"]
+            ]
+            return False
+
 # 测试代码
 if __name__ == "__main__":
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M')
@@ -262,17 +294,7 @@ if __name__ == "__main__":
     try:
         qm = 奇门遁甲(起局时间=current_time, 起局法='拆补法', 地区='合浦县')
         
-        # 计算四柱干支（使用cnlunar库）
-        import cnlunar
-        起局时间 = datetime.strptime(qm.奇门遁甲数据["起局信息"]["起局时间"], '%Y-%m-%d %H:%M:%S')
-        农历 = cnlunar.Lunar(起局时间, godType='8char')
-        
-        # 正确设置四柱干支为数组格式
-        年柱 = [农历.year8Char[0], 农历.year8Char[1]]
-        月柱 = [农历.month8Char[0], 农历.month8Char[1]]
-        日柱 = [农历.day8Char[0], 农历.day8Char[1]]
-        时柱 = [农历.twohour8Char[0], 农历.twohour8Char[1]]
-        qm.奇门遁甲数据["起局信息"]["四柱干支"] = [年柱, 月柱, 日柱, 时柱]
+        # 四柱干支在初始化时已计算，无需重复计算
         
         # 打印结果
         latitude, longitude, true_solar_time = qm.真太阳时计算()
