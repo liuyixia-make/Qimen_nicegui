@@ -91,7 +91,7 @@ QIMEN_STYLES = '''
   text-align: center;
   margin-right: 0.7em;
   white-space: nowrap;
-  font-size: 13px  !important;
+  font-size: 12px  !important;
 }
 .ganzhi-cell {
   font-weight: bold;
