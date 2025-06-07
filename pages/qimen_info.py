@@ -2,6 +2,7 @@ from nicegui import ui
 from Services.paipan_servise import 奇门遁甲
 import datetime  # 修改这里
 from urllib.parse import unquote
+from components.navbar import create_navbar
 
 
 QIMEN_STYLES = '''
@@ -531,6 +532,9 @@ def qimen_info_page(datetime_str: str = None, method: str = None, area: str = No
         ui.add_head_html('''
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         ''')
+        
+        # 添加导航栏
+        create_navbar()
         
         # 检查参数是否完整
         if not datetime_str:

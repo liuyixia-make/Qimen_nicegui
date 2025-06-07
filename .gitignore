@@ -1,18 +1,61 @@
 # Python 缓存文件 
 __pycache__/ 
-*.pyc 
-*.pyo 
- 
-# 包元数据 
-*.egg-info/ 
- 
-# 构建和分发目录 
-build/ 
-dist/ 
- 
-# 测试和类型检查缓存 
-.mypy_cache/ 
-.pytest_cache/ 
- 
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE相关文件
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# 日志文件
+*.log
+log/
+logs/
+
+# 本地配置文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 数据库文件
+*.db
+*.sqlite3
+
+# 其他临时文件
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
 # NiceGUI 可能的特定缓存（可按需调整） 
 nicegui_cache/  # 假设 NiceGUI 有此缓存目录 

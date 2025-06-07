@@ -3,6 +3,7 @@ import pytz
 from nicegui import ui
 from Services.paipan_servise import 奇门遁甲
 from urllib.parse import urlencode
+from components.navbar import create_navbar
 
 @ui.page('/paipan')
 async def paipan_page():
@@ -14,35 +15,84 @@ async def paipan_page():
     ui.add_head_html(f'''
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background-color: #f5f5f5;
+            }}
             .datetime-input {{
                 -webkit-appearance: none;
-                font-size: 14px !important;
+                font-size: 15px !important;
                 touch-action: manipulation;
-                height: 36px !important;
+                height: 40px !important;
+                width: 100%;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 0 10px;
             }}
             
-            .compact-card {{
-                padding: 0.75rem !important;
+            .form-card {{
+                padding: 16px !important;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                background: #ffffff;
+                margin: 0 12px;
             }}
             
-            .compact-grid {{
+            .form-grid {{
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 8px;
+                grid-template-columns: 1fr;
+                gap: 14px;
                 width: 100%;
             }}
             
-            .compact-title {{
-                margin-bottom: 0.5rem !important;
+            .form-title {{
+                margin-bottom: 12px !important;
+                font-size: 18px;
             }}
             
-            .full-width {{
-                grid-column: 1 / -1;
+            .form-label {{
+                font-size: 14px;
+                font-weight: 500;
+                margin-bottom: 4px;
+                display: block;
             }}
             
+            .form-group {{
+                margin-bottom: 6px;
+            }}
+            
+            .submit-btn {{
+                height: 40px;
+                font-size: 15px !important;
+                width: 100%;
+                margin-top: 8px;
+            }}
+            
+            /* 移动端优化 */
             @media (max-width: 480px) {{
-                .compact-grid {{
-                    grid-template-columns: 1fr;
+                .form-card {{
+                    padding: 14px !important;
+                    margin: 0 8px;
+                }}
+                
+                .form-grid {{
+                    gap: 12px;
+                }}
+                
+                .form-title {{
+                    margin-bottom: 10px !important;
+                    font-size: 17px;
+                }}
+                
+                .datetime-input {{
+                    font-size: 14px !important;
+                    height: 38px !important;
+                }}
+                
+                .submit-btn {{
+                    height: 38px;
+                    font-size: 14px !important;
                 }}
             }}
         </style>
@@ -58,48 +108,49 @@ async def paipan_page():
         </script>
     ''')
 
-    with ui.card().classes('w-full max-w-3xl mx-auto compact-card'):
-        ui.label('奇门遁甲排盘').classes('text-lg font-bold text-center w-full compact-title')
+    # 添加导航栏
+    create_navbar()
+
+    with ui.card().classes('form-card w-full max-w-md mx-auto'):
+        ui.label('奇门遁甲排盘').classes('text-center w-full form-title font-bold')
         
-        with ui.element('div').classes('compact-grid'):
-            # 第一行：日期时间选择器（占据整行）
-            with ui.element('div').classes('full-width'):
+        with ui.element('div').classes('form-grid'):
+            # 第一行：日期时间选择器
+            with ui.element('div').classes('form-group'):
+                ui.label('起卦时间 (北京时间)').classes('form-label')
                 ui.html(f'''
-                    <div class="w-full">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">起卦时间 (北京时间)</label>
-                        <input type="datetime-local" 
-                               id="datetime_input"
-                               class="datetime-input w-full px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
+                    <input type="datetime-local" 
+                           id="datetime_input"
+                           class="datetime-input">
                 ''')
             
-            # 第二行：左侧 - 起局法选择器
-            with ui.element('div'):
+            # 第二行：起局法选择器
+            with ui.element('div').classes('form-group'):
+                ui.label('起局法').classes('form-label')
                 method = ui.select(
-                    label='起局法',
                     options=['拆补法', '置润法'],
                     value='拆补法'
                 ).classes('w-full')
             
-            # 第二行：右侧 - 真太阳时开关
-            with ui.element('div').classes('flex items-center'):
+            # 第三行：真太阳时开关
+            with ui.element('div').classes('form-group items-center'):
                 use_true_solar_time = ui.switch(text='使用真太阳时', value=True)
                 ui.tooltip('开启后需要输入地区，以计算真太阳时；关闭则直接使用北京时间').classes('text-xs')
             
-            # 第三行：地区输入框（受真太阳时开关控制）
-            area_container = ui.element('div').classes('full-width')
+            # 第四行：地区输入框
+            area_container = ui.element('div').classes('form-group')
             with area_container:
+                ui.label('地区').classes('form-label')
                 area = ui.input(
-                    label='地区',
                     value='合浦县'
                 ).classes('w-full')
             
-            # 第四行：生成按钮（占据整行）
-            with ui.element('div').classes('full-width'):
+            # 第五行：生成按钮
+            with ui.element('div').classes('form-group'):
                 ui.button(
                     '生成奇门遁甲排盘', 
                     on_click=lambda: on_submit()
-                ).classes('w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg text-base font-medium')
+                ).classes('submit-btn bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium')
         
         # 当真太阳时开关状态变化时，控制地区输入框的显示与隐藏
         def update_area_visibility():
