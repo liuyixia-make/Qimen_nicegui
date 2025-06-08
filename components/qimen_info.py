@@ -428,6 +428,13 @@ def generate_cell_content(palace_data, palace_num):
     if palace_data.get("隐干"):
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:1"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["隐干"])}</span></div></div>')
     
+    # 寄地盘干及其长生
+    if palace_data.get("寄地盘干"):
+        changsheng = ""
+        if palace_data.get("寄地盘干长生"):
+            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄地盘干长生"]])
+        content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄地盘干"])}</span>{changsheng}</div></div>')
+    
     # 地盘干及其长生
     if palace_data.get("地盘干"):
         changsheng = ""
@@ -442,12 +449,12 @@ def generate_cell_content(palace_data, palace_num):
             changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["天盘干长生"]])
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:7"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["天盘干"])}</span>{changsheng}</div></div>')
     
-    # 寄宫干及其长生
-    if palace_data.get("寄宫干"):
+    # 寄天盘干及其长生
+    if palace_data.get("寄天盘干"):
         changsheng = ""
-        if palace_data.get("寄宫干长生"):
-            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄宫干长生"]])
-        content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫干"])}</span>{changsheng}</div></div>')
+        if palace_data.get("寄天盘干长生"):
+            changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄天盘干长生"]])
+        content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄天盘干"])}</span>{changsheng}</div></div>')
     
     # 寄宫星及其旺衰
     if palace_data.get("寄宫星"):
