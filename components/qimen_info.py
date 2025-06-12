@@ -95,7 +95,7 @@ ui.add_head_html('''
 .cell-inner-grid {
   line-height: 0.8;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: 1fr 1fr 1fr 1.5fr 1fr 1.2fr 1.2fr;  /* 调整列宽比例，第6和第7列稍宽 */
   grid-template-rows: repeat(5, 1fr);
   width: 100%;
   height: 100%;
@@ -124,7 +124,20 @@ ui.add_head_html('''
   height: 100%;
   justify-content: flex-start;  /* 改为左对齐 */
   padding-left: 2px;  /* 添加左边距 */
+  min-width: 12px;    /* 添加最小宽度 */
 }
+
+/* 为特定位置的单元格设置宽度和布局样式 */
+.cell-block[style*="grid-column:6"] {
+  width: 100%;
+  min-width: 12px;
+}
+
+.cell-block[style*="grid-column:7"] {
+  width: 100%;
+  min-width: 12px;
+}
+
  /* 格局 */                
 .pattern-corner-multiline {
     position: absolute;
@@ -187,7 +200,7 @@ ui.add_head_html('''
 .cell-block[style*="grid-column:7"] {
   overflow: visible !important;
   z-index: 3;
-# }
+}
 # .cell-block[style*="grid-column:7"] .cell-flex-align {
 #   position: relative;
 #   padding-right: 15px;  /* 给右边留出空间 */
@@ -434,6 +447,9 @@ def generate_cell_content(palace_data, palace_num):
         if palace_data.get("寄地盘干长生"):
             changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄地盘干长生"]])
         content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄地盘干"])}</span>{changsheng}</div></div>')
+    else:
+        # 如果没有寄地盘干，添加空元素保持布局
+        content_blocks.append(f'<div class="cell-block" style="grid-row:5;grid-column:6"><div class="cell-flex-align"><span class="main-content"></span></div></div>')
     
     # 地盘干及其长生
     if palace_data.get("地盘干"):
@@ -455,6 +471,9 @@ def generate_cell_content(palace_data, palace_num):
         if palace_data.get("寄天盘干长生"):
             changsheng = generate_vertical_text([apply_color_to_text(cs) for cs in palace_data["寄天盘干长生"]])
         content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄天盘干"])}</span>{changsheng}</div></div>')
+    else:
+        # 如果没有寄天盘干，添加空元素保持布局
+        content_blocks.append(f'<div class="cell-block" style="grid-row:4;grid-column:6"><div class="cell-flex-align"><span class="main-content"></span></div></div>')
     
     # 寄宫星及其旺衰
     if palace_data.get("寄宫星"):
@@ -462,6 +481,9 @@ def generate_cell_content(palace_data, palace_num):
         if palace_data.get("寄宫星旺衰"):
             wangshuai = generate_vertical_text([apply_color_to_text(ws) for ws in palace_data["寄宫星旺衰"]])
         content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:6"><div class="cell-flex-align"><span class="main-content">{apply_color_to_text(palace_data["寄宫星"])}</span>{wangshuai}</div></div>')
+    else:
+        # 如果没有寄宫星，添加空元素保持布局
+        content_blocks.append(f'<div class="cell-block" style="grid-row:3;grid-column:6"><div class="cell-flex-align"><span class="main-content"></span></div></div>')
     
     # 天盘门及其旺衰
     if palace_data.get("天盘门"):
