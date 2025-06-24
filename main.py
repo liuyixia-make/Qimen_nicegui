@@ -6,7 +6,7 @@ from nicegui import app
 from cnlunar import Lunar
 from fastapi.responses import HTMLResponse
 from fastapi import Request
-
+# 主页
 PAGES_DIR = 'pages'
 
 # 添加PWA支持的HTML头部
