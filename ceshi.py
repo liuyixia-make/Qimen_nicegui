@@ -1,6 +1,6 @@
 import datetime
 import cnlunar
-
+#11
 a = cnlunar.Lunar(datetime.datetime(2025, 6, 22, 10, 30), godType='8char')  # 常规算法
 # a = cnlunar.Lunar(datetime.datetime(2022, 2, 3, 10, 30), godType='8char', year8Char='beginningOfSpring')  # 八字立春切换算法
 dic = {
